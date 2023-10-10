@@ -91,19 +91,19 @@ loadavg(void)
 int
 batterylife(void) {
 
-  char *res;
-  res = malloc(sizeof(char)*20);
   int fd, life;
   char inum[4];
 
   if (-1 == (fd = open(PATH_BATT_CAPACITY,O_RDONLY))) {
       perror("Could not open battery info for reading");
-      exit(-1);
+      return -1;
   }
   read( fd, &inum, sizeof(inum) );
   close(fd);
-
   sscanf(inum, "%d", &life);
+/*
+  char *res;
+  res = malloc(sizeof(char)*20);
   if (life >= 84) {
 	  sprintf(res, "%lc", 0x2587);
   } else if (life < 84 && life >= 68) {
@@ -117,7 +117,7 @@ batterylife(void) {
   } else if (life < 16) {
     sprintf(res, "%lc", 0x2581);
   }
-
+*/
   return (int) life; 
 }
 
@@ -140,7 +140,11 @@ main(void)
   	// avgs = loadavg();
   	battery = batterylife();
   	tmhki = mktimes(" %Y-%m-%d %H:%M", tzhelsinki);
-  	status = smprintf("%s %i", tmhki ,battery);
+    if (battery == -1) {
+    	status = smprintf("%s", tmhki);
+    } else {
+    	status = smprintf("%s %i", tmhki ,battery);
+    }
   	setstatus(status);
   }
   free(&battery);
